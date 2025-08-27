@@ -1,8 +1,11 @@
-Got it 👍 Here’s an **upgraded full README draft** for your project, now including the *wow factors* you wanted **and** explicitly stating that the frontend will use **Service Bench WebKit** in development:
-
----
-
 # 🏦 AI-Powered Credit Assessment Platform
+
+> **Next-generation credit assessment that goes beyond traditional scoring**
+
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.68+-green.svg)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## 🚀 Overview
 
