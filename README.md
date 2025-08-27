@@ -124,3 +124,105 @@ The goal: **fairer, explainable, and future-proof creditworthiness evaluations**
 * 🔄 Phase 3: Integrate explainability & simulation
 * 🔄 Phase 4: Expand datasets (career, salary, housing, macroeconomics)
 * 🔮 Phase 5: Deploy production-ready cloud service
+
+---
+Access Points
+Frontend: http://localhost:3000
+Backend API: http://localhost:8000
+API Documentation: http://localhost:8000/docs
+Interactive API Docs: http://localhost:8000/redoc
+
+---
+ai-credit-assessment/
+├── backend/                 # FastAPI backend
+│   ├── main.py             # Main application
+│   ├── database.py         # Database configuration
+│   ├── models/             # Database models
+│   ├── schemas/            # Pydantic schemas
+│   ├── routers/            # API endpoints
+│   ├── services/           # AI models & business logic
+│   └── utils/              # Utilities
+├── frontend/               # React frontend
+│   ├── src/
+│   │   ├── components/     # Reusable components
+│   │   ├── pages/          # Page components
+│   │   ├── services/       # API services
+│   │   └── App.js          # Main app
+│   └── public/             # Static assets
+├── data/                   # Database files
+├── models/                 # AI model files
+├── logs/                   # Application logs
+├── requirements.txt        # Python dependencies
+├── package.json           # Node.js dependencies
+├── docker-compose.yml     # Docker configuration
+├── setup.sh              # Setup script
+└── run.sh                # Run script
+
+---
+
+## 🚀 How to Run the POC
+
+### Prerequisites
+
+- **Python 3.8+** with pip
+- **Node.js 16+** with npm
+- **Git** for cloning the repository
+
+### Quick Start (Recommended)
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/channxy/ai-credit-assessment
+   cd ai-credit-assessment
+   ```
+
+2. **Run the automated setup**
+   ```bash
+   chmod +x setup.sh run.sh
+   ./setup.sh
+   ```
+
+3. **Start the application**
+   ```bash
+   ./run.sh
+   ```
+
+4. **Access the application**
+   - 🌐 **Frontend**: http://localhost:3000
+   - 🔧 **Backend API**: http://localhost:8000
+   - 📚 **API Documentation**: http://localhost:8000/docs
+   - 📖 **Interactive API Docs**: http://localhost:8000/redoc
+
+### Manual Setup
+
+#### Option 1: Local Development
+
+1. **Install Python dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Install Node.js dependencies**
+   ```bash
+   cd frontend
+   npm install
+   cd ..
+   ```
+
+3. **Create environment file**
+   ```bash
+   # Create .env file with your configuration
+   echo "DATABASE_URL=sqlite:///./data/credit_assessment.db" > .env
+   echo "ENVIRONMENT=development" >> .env
+   ```
+
+4. **Start the backend server**
+   ```bash
+   python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+5. **Start the frontend (in a new terminal)**
+   ```bash
+   cd frontend
+   npm start
+   ```

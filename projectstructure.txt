@@ -1,0 +1,24 @@
+ai-credit-assessment/
+├── backend/                 # FastAPI backend
+│   ├── main.py             # Main application
+│   ├── database.py         # Database configuration
+│   ├── models/             # Database models
+│   ├── schemas/            # Pydantic schemas
+│   ├── routers/            # API endpoints
+│   ├── services/           # AI models & business logic
+│   └── utils/              # Utilities
+├── frontend/               # React frontend
+│   ├── src/
+│   │   ├── components/     # Reusable components
+│   │   ├── pages/          # Page components
+│   │   ├── services/       # API services
+│   │   └── App.js          # Main app
+│   └── public/             # Static assets
+├── data/                   # Database files
+├── models/                 # AI model files
+├── logs/                   # Application logs
+├── requirements.txt        # Python dependencies
+├── package.json           # Node.js dependencies
+├── docker-compose.yml     # Docker configuration
+├── setup.sh              # Setup script
+└── run.sh                # Run script
