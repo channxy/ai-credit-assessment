@@ -90,13 +90,13 @@ async def assess_credit(
         # Save assessment to database
         assessment = credit_models.CreditAssessment(
             user_id=request.user_id,
-            credit_score=prediction['credit_score'],
+            credit_score=round(prediction['credit_score'], 2),
             risk_category=prediction['risk_category'],
             confidence_score=prediction['confidence_score'],
-            financial_score=prediction['financial_score'],
-            career_score=prediction['career_score'],
-            housing_score=prediction['housing_score'],
-            social_score=prediction['social_score'],
+            financial_score=round(prediction['financial_score'], 2),
+            career_score=round(prediction['career_score'], 2),
+            housing_score=round(prediction['housing_score'], 2),
+            social_score=round(prediction['social_score'], 2),
             factor_breakdown=prediction['factor_breakdown'],
             recommendations=prediction['recommendations'],
             risk_factors=prediction['risk_factors'],

@@ -10,6 +10,7 @@ fi
 
 # Start backend
 echo "🔧 Starting backend server..."
+source .venv/bin/activate
 python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 

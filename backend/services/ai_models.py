@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 import shap
 import logging
 from datetime import datetime
+from .openai_service import OpenAIService
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,9 @@ class CreditScoringModel:
         self.feature_names = []
         self.model_version = "1.0.0"
         self.models_dir = "models"
+        
+        # Initialize OpenAI service
+        self.openai_service = OpenAIService()
         
         # Create models directory if it doesn't exist
         os.makedirs(self.models_dir, exist_ok=True)
@@ -108,6 +112,45 @@ class CreditScoringModel:
             'education_level_encoded': np.random.choice([0, 1, 2, 3], n_samples, p=[0.2, 0.3, 0.3, 0.2]),
             'age': np.random.normal(35, 10, n_samples),
             'social_score': np.random.beta(3, 2, n_samples),
+            
+            # === NEW SOCIAL CREDIT FACTORS ===
+            # Civic engagement & community involvement
+            'volunteer_hours_monthly': np.random.exponential(5, n_samples),
+            'charity_donations_yearly': np.random.exponential(500, n_samples),
+            'blood_donation_count': np.random.poisson(2, n_samples),
+            'community_service_hours': np.random.exponential(10, n_samples),
+            
+            # Professional & academic conduct
+            'professional_certifications': np.random.poisson(1, n_samples),
+            'academic_honesty_score': np.random.beta(4, 1, n_samples),  # High bias toward honesty
+            'business_practice_score': np.random.beta(4, 1, n_samples),  # High bias toward good practices
+            'commitment_honoring_score': np.random.beta(4, 1, n_samples),  # High bias toward honoring commitments
+            
+            # Legal compliance & law-abiding behavior
+            'criminal_record_count': np.random.poisson(0.1, n_samples),  # Very low probability
+            'administrative_penalties': np.random.poisson(0.2, n_samples),  # Low probability
+            'tax_compliance_score': np.random.beta(4, 1, n_samples),  # High bias toward compliance
+            'regulatory_violations': np.random.poisson(0.1, n_samples),  # Very low probability
+            
+            # Digital footprint & online behavior
+            'digital_footprint_score': np.random.beta(3, 2, n_samples),
+            'online_shopping_frequency': np.random.beta(2, 2, n_samples),
+            'social_media_activity': np.random.beta(2, 2, n_samples),
+            'email_domain_age': np.random.exponential(5, n_samples),
+            
+            # Behavioral patterns
+            'payment_consistency': np.random.beta(4, 1, n_samples),
+            'spending_patterns': np.random.beta(3, 2, n_samples),
+            'savings_behavior': np.random.beta(3, 2, n_samples),
+            
+            # Real-time market data
+            'industry_volatility': np.random.beta(2, 3, n_samples),
+            'regional_economic_health': np.random.beta(3, 2, n_samples),
+            
+            # Community & social indicators
+            'community_involvement': np.random.beta(3, 2, n_samples),
+            'volunteer_history': np.random.beta(3, 2, n_samples),
+            'professional_network_size': np.random.exponential(50, n_samples),
         }
         
         df = pd.DataFrame(data)
@@ -136,8 +179,21 @@ class CreditScoringModel:
         education_adjustment = df['education_level_encoded'] * 30
         age_adjustment = np.clip(df['age'] - 25, 0, 30) * 2
         
+        # === NEW SOCIAL CREDIT ADJUSTMENTS ===
+        # Civic engagement bonus
+        civic_bonus = (df['volunteer_hours_monthly'] * 2) + (df['charity_donations_yearly'] / 100) + (df['blood_donation_count'] * 5)
+        
+        # Professional conduct bonus
+        professional_bonus = (df['professional_certifications'] * 10) + (df['academic_honesty_score'] * 20) + (df['business_practice_score'] * 15) + (df['commitment_honoring_score'] * 15)
+        
+        # Legal compliance bonus (no penalties = bonus)
+        legal_bonus = (df['tax_compliance_score'] * 25) - (df['criminal_record_count'] * 50) - (df['administrative_penalties'] * 30) - (df['regulatory_violations'] * 40)
+        
+        # Social credit adjustment
+        social_credit_adjustment = civic_bonus + professional_bonus + legal_bonus
+        
         # Calculate final score
-        credit_scores = base_score + credit_adjustment + career_adjustment + housing_adjustment + education_adjustment + age_adjustment
+        credit_scores = base_score + credit_adjustment + career_adjustment + housing_adjustment + education_adjustment + age_adjustment + social_credit_adjustment
         
         # Add some noise and clip to valid range
         credit_scores += np.random.normal(0, 30, n_samples)
@@ -173,6 +229,23 @@ class CreditScoringModel:
             # Generate recommendations
             recommendations = self._generate_recommendations(user_data, factor_scores)
             
+            # Generate AI-powered explanations and analysis
+            ai_explanation = ""
+            ai_recommendations = recommendations
+            risk_analysis = ""
+            
+            if self.openai_service.is_available():
+                try:
+                    ai_explanation = self.openai_service.generate_credit_explanation(
+                        user_data, credit_score, factor_scores
+                    )
+                    ai_recommendations = self.openai_service.generate_personalized_recommendations(
+                        user_data, factor_scores, self._identify_risk_factors(user_data, factor_scores)
+                    )
+                    risk_analysis = self.openai_service.generate_risk_analysis(user_data, factor_scores)
+                except Exception as e:
+                    logger.warning(f"OpenAI service error: {e}")
+            
             return {
                 'credit_score': float(credit_score),
                 'risk_category': risk_category,
@@ -182,8 +255,10 @@ class CreditScoringModel:
                 'housing_score': factor_scores['housing'],
                 'social_score': factor_scores['social'],
                 'factor_breakdown': explanations,
-                'recommendations': recommendations,
+                'recommendations': ai_recommendations,
                 'risk_factors': self._identify_risk_factors(user_data, factor_scores),
+                'ai_explanation': ai_explanation,
+                'risk_analysis': risk_analysis,
                 'model_version': self.model_version
             }
             

@@ -13,6 +13,7 @@ import {
 import CreditScoreGauge from '../components/CreditScoreGauge';
 import FactorScoreCard from '../components/FactorScoreCard';
 import RecentTransactions from '../components/RecentTransactions';
+import CreditScoreExplanation from '../components/CreditScoreExplanation';
 import { api } from '../services/api';
 
 const Dashboard = () => {
@@ -26,7 +27,7 @@ const Dashboard = () => {
         setLoading(true);
         // For demo purposes, we'll use mock data
         const mockData = {
-          creditScore: 725,
+          creditScore: 756.32,
           riskCategory: 'good',
           factorScores: {
             financial: 78,
@@ -231,11 +232,23 @@ const Dashboard = () => {
         </div>
       </motion.div>
 
-      {/* Recent Transactions */}
+      {/* Credit Score Explanation */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <CreditScoreExplanation 
+          score={creditScore} 
+          showDetails={false}
+        />
+      </motion.div>
+
+      {/* Recent Transactions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
       >
         <RecentTransactions transactions={recentTransactions} />
       </motion.div>

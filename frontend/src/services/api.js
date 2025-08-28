@@ -68,11 +68,11 @@ export const creditAPI = {
 export const simulationAPI = {
   // Run scenario simulation
   runSimulation: (simulation) =>
-    api.post('/api/v1/simulation/scenario', simulation),
+    api.post('/api/v1/simulation/scenario', simulation).then(response => response.data),
 
   // Get simulation history
   getSimulationHistory: (userId) =>
-    api.get(`/api/v1/simulation/history/${userId}`),
+    api.get(`/api/v1/simulation/history/${userId}`).then(response => response.data),
 };
 
 // Recommendations API
@@ -84,6 +84,28 @@ export const recommendationsAPI = {
   // Get improvement plan
   getImprovementPlan: (userId) =>
     api.get(`/api/v1/recommendations/${userId}/improvement-plan`),
+};
+
+// AI Features API
+export const aiFeaturesAPI = {
+  // Get AI status
+  getAIStatus: () => api.get('/api/v1/ai/ai-status'),
+
+  // Get enhanced explanation
+  getEnhancedExplanation: (userId) =>
+    api.post('/api/v1/ai/enhanced-explanation', { user_id: userId }),
+
+  // Get personalized recommendations
+  getPersonalizedRecommendations: (userId) =>
+    api.post('/api/v1/ai/personalized-recommendations', { user_id: userId }),
+
+  // Run scenario analysis
+  runScenarioAnalysis: (scenario, userId) =>
+    api.post('/api/v1/ai/scenario-analysis', { scenario, user_id: userId }),
+
+  // Generate synthetic profile
+  generateSyntheticProfile: () =>
+    api.post('/api/v1/ai/generate-synthetic-profile'),
 };
 
 // Users API

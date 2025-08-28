@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from .database import engine, Base
 from .models import credit_models, user_models
-from .routers import credit, users, simulation, recommendations
+from .routers import credit, users, simulation, recommendations, ai_features
 from .services.ai_models import CreditScoringModel
 from .utils.logger import setup_logger
 
@@ -61,6 +61,7 @@ app.include_router(credit.router, prefix="/api/v1/credit", tags=["Credit Assessm
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(simulation.router, prefix="/api/v1/simulation", tags=["Simulation"])
 app.include_router(recommendations.router, prefix="/api/v1/recommendations", tags=["Recommendations"])
+app.include_router(ai_features.router, prefix="/api/v1/ai", tags=["AI Features"])
 
 # Health check endpoint
 @app.get("/health")

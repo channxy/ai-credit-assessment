@@ -14,6 +14,7 @@ router = APIRouter()
 
 # Initialize AI model
 credit_model = CreditScoringModel()
+credit_model.load_models()  # Ensure model is loaded
 
 @router.post("/scenario", response_model=SimulationResponse)
 async def run_simulation(
@@ -148,16 +149,16 @@ async def run_simulation(
         simulated_prediction = credit_model.predict_credit_score(modified_data)
         
         # Calculate score change
-        original_score = current_assessment.credit_score
-        simulated_score = simulated_prediction['credit_score']
-        score_change = simulated_score - original_score
+        original_score = round(current_assessment.credit_score, 2)
+        simulated_score = round(simulated_prediction['credit_score'], 2)
+        score_change = round(simulated_score - original_score, 2)
         
         # Generate recommendations based on simulation
         recommendations = []
         if score_change > 0:
-            recommendations.append(f"This scenario would improve your credit score by {score_change:.0f} points")
+            recommendations.append(f"This scenario would improve your credit score by {score_change:.2f} points")
         elif score_change < 0:
-            recommendations.append(f"This scenario would decrease your credit score by {abs(score_change):.0f} points")
+            recommendations.append(f"This scenario would decrease your credit score by {abs(score_change):.2f} points")
         else:
             recommendations.append("This scenario would have minimal impact on your credit score")
         

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calculator, TrendingUp, TrendingDown, Home, DollarSign, Briefcase } from 'lucide-react';
+import { Calculator, TrendingUp, TrendingDown, Home, DollarSign, Briefcase, Loader } from 'lucide-react';
+import { simulationAPI } from '../services/api';
+import CreditScoreExplanation from '../components/CreditScoreExplanation';
 
 const Simulation = () => {
   const [selectedScenario, setSelectedScenario] = useState('salary_increase');
@@ -14,6 +16,25 @@ const Simulation = () => {
     debt_reduction: 5000,
     expense_reduction: 500
   });
+  const [simulationResult, setSimulationResult] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [simulationHistory, setSimulationHistory] = useState([]);
+  
+  // Test data for debugging
+  const testResult = {
+    original_score: 756.32,
+    simulated_score: 788.32,
+    score_change: 32.00,
+    factor_changes: {
+      "salary": "+$10,000",
+      "monthly_income": "+$833"
+    },
+    recommendations: [
+      "This scenario would improve your credit score by 32.00 points",
+      "Higher income typically improves creditworthiness and borrowing capacity"
+    ]
+  };
 
   const scenarios = [
     {
@@ -64,26 +85,50 @@ const Simulation = () => {
     }));
   };
 
-  const runSimulation = () => {
-    // Mock simulation result
-    const mockResult = {
-      originalScore: 725,
-      simulatedScore: 745,
-      scoreChange: 20,
-      factorChanges: {
-        'Income': '+$10,000',
-        'Monthly Income': '+$833',
-        'Debt-to-Income': 'Improved'
-      },
-      recommendations: [
-        'This salary increase would improve your credit score by 20 points',
-        'Higher income typically improves creditworthiness and borrowing capacity'
-      ]
-    };
-    
-    // In a real app, this would call the API
-    console.log('Running simulation with:', { selectedScenario, simulationParams });
-    console.log('Result:', mockResult);
+  // Load simulation history on component mount
+  useEffect(() => {
+    loadSimulationHistory();
+  }, []);
+
+  const loadSimulationHistory = async () => {
+    try {
+      const history = await simulationAPI.getSimulationHistory(1); // Using user ID 1 for demo
+      setSimulationHistory(history);
+    } catch (error) {
+      console.error('Failed to load simulation history:', error);
+    }
+  };
+
+  const runSimulation = async () => {
+    setIsLoading(true);
+    setError(null);
+    setSimulationResult(null);
+
+    try {
+      // Prepare simulation request
+      const simulationRequest = {
+        user_id: 1, // Using user ID 1 for demo
+        scenario_type: selectedScenario,
+        parameters: simulationParams
+      };
+
+      console.log('Running simulation with:', simulationRequest);
+      
+      const result = await simulationAPI.runSimulation(simulationRequest);
+      console.log('Simulation result:', result);
+      console.log('Setting simulation result state...');
+      setSimulationResult(result);
+      console.log('Simulation result state set');
+      
+      // Reload simulation history
+      await loadSimulationHistory();
+      
+    } catch (error) {
+      console.error('Simulation failed:', error);
+      setError(error.response?.data?.detail || 'Failed to run simulation');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getScenarioIcon = (scenario) => {
@@ -101,10 +146,21 @@ const Simulation = () => {
         </div>
         <button 
           onClick={runSimulation}
-          className="btn btn-primary"
+          disabled={isLoading}
+          className="btn btn-primary mr-2"
         >
-          <Calculator className="h-4 w-4 mr-2" />
-          Run Simulation
+          {isLoading ? (
+            <Loader className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Calculator className="h-4 w-4 mr-2" />
+          )}
+          {isLoading ? 'Running...' : 'Run Simulation'}
+        </button>
+        <button 
+          onClick={() => setSimulationResult(testResult)}
+          className="btn btn-secondary"
+        >
+          Test Results
         </button>
       </div>
 
@@ -274,47 +330,134 @@ const Simulation = () => {
         )}
       </motion.div>
 
-      {/* Simulation Results (Mock) */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="card"
-      >
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Simulation Results</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Current Score</p>
-            <p className="text-3xl font-bold text-gray-900">725</p>
+      {/* Debug Info */}
+      <div className="card bg-gray-50">
+        <h3 className="font-medium text-gray-900 mb-2">Debug Info</h3>
+        <div className="text-sm text-gray-600">
+          <p>Loading: {isLoading ? 'true' : 'false'}</p>
+          <p>Error: {error || 'none'}</p>
+          <p>Simulation Result: {simulationResult ? 'exists' : 'null'}</p>
+          <p>Selected Scenario: {selectedScenario}</p>
+          {simulationResult && (
+            <div className="mt-2 p-2 bg-white rounded border">
+              <p><strong>Result Data:</strong></p>
+              <pre className="text-xs overflow-auto">
+                {JSON.stringify(simulationResult, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Error Display */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card bg-red-50 border-red-200"
+        >
+          <div className="text-red-800">
+            <h3 className="font-medium">Simulation Error</h3>
+            <p className="text-sm">{error}</p>
           </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Simulated Score</p>
-            <p className="text-3xl font-bold text-green-600">745</p>
+        </motion.div>
+      )}
+
+      {/* Simulation Results */}
+      {simulationResult ? (
+        <div className="card">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Simulation Results</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <p className="text-sm text-gray-600">Current Score</p>
+              <p className="text-3xl font-bold text-gray-900">{simulationResult.original_score?.toFixed(2)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-600">Simulated Score</p>
+              <p className={`text-3xl font-bold ${simulationResult.score_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {simulationResult.simulated_score?.toFixed(2)}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-600">Score Change</p>
+              <p className={`text-3xl font-bold ${simulationResult.score_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {simulationResult.score_change >= 0 ? '+' : ''}{simulationResult.score_change?.toFixed(2)}
+              </p>
+            </div>
           </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Score Change</p>
-            <p className="text-3xl font-bold text-green-600">+20</p>
+          
+          {simulationResult.factor_changes && Object.keys(simulationResult.factor_changes).length > 0 && (
+            <div className="mt-6">
+              <h3 className="font-medium text-gray-900 mb-3">Factor Changes</h3>
+              <div className="space-y-2">
+                {Object.entries(simulationResult.factor_changes).map(([factor, change]) => (
+                  <div key={factor} className="flex justify-between">
+                    <span className="text-gray-600">{factor}</span>
+                    <span className="font-medium text-green-600">{change}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {simulationResult.recommendations && simulationResult.recommendations.length > 0 && (
+            <div className="mt-6">
+              <h3 className="font-medium text-gray-900 mb-3">Recommendations</h3>
+              <div className="space-y-2">
+                {simulationResult.recommendations.map((recommendation, index) => (
+                  <div key={index} className="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">
+                    {recommendation}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Credit Score Explanation */}
+          <div className="mt-6">
+            <CreditScoreExplanation 
+              score={simulationResult.simulated_score} 
+              showDetails={true}
+            />
           </div>
         </div>
-        
-        <div className="mt-6">
-          <h3 className="font-medium text-gray-900 mb-3">Factor Changes</h3>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Income</span>
-              <span className="font-medium text-green-600">+$10,000</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Monthly Income</span>
-              <span className="font-medium text-green-600">+$833</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Debt-to-Income</span>
-              <span className="font-medium text-green-600">Improved</span>
-            </div>
-          </div>
+      ) : (
+        <div className="card">
+          <p className="text-gray-600">No simulation results yet. Click "Run Simulation" to see results.</p>
         </div>
-      </motion.div>
+      )}
+
+      {/* Simulation History */}
+      {simulationHistory.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="card"
+        >
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Simulation History</h2>
+          <div className="space-y-3">
+            {simulationHistory.slice(0, 5).map((sim) => (
+              <div key={sim.id} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-medium text-gray-900 capitalize">{sim.scenario_type.replace('_', ' ')}</h3>
+                    <p className="text-sm text-gray-600">
+                      {new Date(sim.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-600">Score Change</p>
+                    <p className={`font-bold ${sim.score_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {sim.score_change >= 0 ? '+' : ''}{sim.score_change}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };

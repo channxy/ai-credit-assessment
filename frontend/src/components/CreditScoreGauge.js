@@ -6,7 +6,8 @@ const CreditScoreGauge = ({ score }) => {
   useEffect(() => {
     if (progressRef.current) {
       const percentage = (score / 850) * 100;
-      const circumference = 2 * Math.PI * 90; // radius = 90
+      // For a semi-circle gauge, we use half the circumference
+      const circumference = Math.PI * 90; // radius = 90, half circle
       const offset = circumference - (percentage / 100) * circumference;
       progressRef.current.style.strokeDashoffset = offset;
     }
@@ -30,43 +31,74 @@ const CreditScoreGauge = ({ score }) => {
 
   return (
     <div className="credit-gauge">
-      <svg width="200" height="200" viewBox="0 0 200 200">
-        {/* Background circle */}
-        <circle
-          cx="100"
-          cy="100"
-          r="90"
-          className="background"
+      <svg width="200" height="120" viewBox="0 0 200 120">
+        {/* Background semi-circle */}
+        <path
+          d="M 10 110 A 90 90 0 0 1 190 110"
+          fill="none"
+          stroke="#e5e7eb"
+          strokeWidth="8"
         />
         
-        {/* Progress circle */}
-        <circle
+        {/* Progress semi-circle */}
+        <path
           ref={progressRef}
-          cx="100"
-          cy="100"
-          r="90"
-          className="progress"
+          d="M 10 110 A 90 90 0 0 1 190 110"
+          fill="none"
+          stroke={getScoreColor(score)}
+          strokeWidth="8"
+          strokeLinecap="round"
           style={{
-            stroke: getScoreColor(score),
-            strokeDasharray: 2 * Math.PI * 90,
-            strokeDashoffset: 2 * Math.PI * 90,
+            strokeDasharray: Math.PI * 90,
+            strokeDashoffset: Math.PI * 90,
           }}
         />
+        
+        {/* Gauge markers */}
+        {[300, 450, 600, 750, 850].map((mark, index) => {
+          const angle = (index * Math.PI) / 4; // Distribute markers evenly
+          const x = 100 + 85 * Math.cos(angle);
+          const y = 110 - 85 * Math.sin(angle);
+          const x2 = 100 + 95 * Math.cos(angle);
+          const y2 = 110 - 95 * Math.sin(angle);
+          
+          return (
+            <g key={mark}>
+              <line
+                x1={x}
+                y1={y}
+                x2={x2}
+                y2={y2}
+                stroke="#9ca3af"
+                strokeWidth="2"
+              />
+              <text
+                x={100 + 105 * Math.cos(angle)}
+                y={110 - 105 * Math.sin(angle)}
+                textAnchor="middle"
+                className="text-xs"
+                fill="#6b7280"
+              >
+                {mark}
+              </text>
+            </g>
+          );
+        })}
         
         {/* Center text */}
         <text
           x="100"
-          y="85"
+          y="95"
           textAnchor="middle"
           className="text-2xl font-bold"
           fill="#1f2937"
         >
-          {score}
+          {score?.toFixed(2)}
         </text>
         
         <text
           x="100"
-          y="105"
+          y="115"
           textAnchor="middle"
           className="text-sm"
           fill="#6b7280"

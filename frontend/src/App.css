@@ -22,27 +22,20 @@
 .credit-gauge {
   position: relative;
   width: 200px;
-  height: 200px;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .credit-gauge svg {
-  transform: rotate(-90deg);
+  /* No rotation needed for semi-circle facing down */
 }
 
-.credit-gauge circle {
+.credit-gauge path {
   fill: none;
   stroke-width: 8;
   stroke-linecap: round;
-}
-
-.credit-gauge .background {
-  stroke: #e5e7eb;
-}
-
-.credit-gauge .progress {
-  stroke: #10b981;
-  stroke-dasharray: 283;
-  stroke-dashoffset: 283;
   transition: stroke-dashoffset 0.5s ease-in-out;
 }
 
